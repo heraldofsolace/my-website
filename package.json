@@ -13,10 +13,12 @@
     "lint": "nx run-many -t lint",
     "copytypes": "node copyTypes.js"
   },
+  "dependencies": {
+    "husky": "^9.1.7"
+  },
   "devDependencies": {
     "@strapi/strapi": "5.52.1",
     "esbuild": "^0.28.2",
-    "husky": "^9.1.7",
     "nx": "^23.1.1"
   },
   "overrides": {
