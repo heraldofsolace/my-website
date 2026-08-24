@@ -6,6 +6,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { Reveal } from "@/components/Reveal";
 import BlocksContent from "@/components/BlocksContent";
+import ArticleJsonLd from "@/components/ArticleJsonLd";
 import { profile } from "@/lib/data";
 import {
   getPosts,
@@ -94,6 +95,7 @@ export default async function BlogPostPage({
 
   return (
     <>
+      <ArticleJsonLd post={post} />
       <Nav />
       <main>
         <section className="border-b border-line px-6 pb-16 pt-36 md:px-10">

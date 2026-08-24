@@ -8,89 +8,16 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import PersonaTransition from "@/components/PersonaTransition";
+import { personas, type PersonaId } from "@/lib/personaData";
 
-export type PersonaId = "devrel" | "math";
-
-export type PersonaContent = {
-  id: PersonaId;
-  label: string;
-  title: string;
-  role: string;
-  tagline: string;
-  heroBioBefore: string;
-  heroBioEmphasis: string;
-  heroBioAfter: string;
-  keywords: string[];
-};
-
-// TODO: "math" copy is a first draft — swap in your own wording once
-// you've settled on how you want to describe this side of things.
-export const personas: Record<PersonaId, PersonaContent> = {
-  devrel: {
-    id: "devrel",
-    label: "DevRel",
-    title: "Aniket Bhattacharyea — Developer Relations & Technical Content",
-    role: "Developer Relations & Technical Content",
-    tagline: "Worry-free developer marketing",
-    heroBioBefore: "I help developer tools companies earn trust with ",
-    heroBioEmphasis: "worry-free",
-    heroBioAfter:
-      " developer marketing — writing, strategy, and content that developers actually read.",
-    keywords: [
-      "Technical Writing",
-      "DevRel Strategy",
-      "Developer Content",
-      "SEO",
-      "Community Growth",
-      "Code Tutorials",
-    ],
-  },
-  math: {
-    id: "math",
-    label: "Math",
-    title: "Aniket Bhattacharyea — Mathematician & Astrophotographer",
-    role: "Mathematician & Astrophotographer",
-    tagline: "Proofs by day, deep sky by night",
-    heroBioBefore: "I chase ",
-    heroBioEmphasis: "precision",
-    heroBioAfter:
-      " — in mathematical proofs during the day, and in long-exposure images of the night sky after dark.",
-    keywords: [
-      "Number Theory",
-      "Astrophotography",
-      "Deep-Sky Imaging",
-      "Mathematical Research",
-      "Image Processing",
-      "Telescopes",
-    ],
-  },
-};
-
-export type PaperItem = {
-  title: string;
-  venue: string;
-  year: string;
-  href: string;
-};
-
-// Pulled from https://orcid.org/0000-0002-5489-4906.
-export const papers: PaperItem[] = [
-  {
-    title:
-      "Advancing instance segmentation and WBC classification in peripheral blood smear through domain adaptation: A study on PBC and the novel RV-PBS datasets",
-    venue: "Expert Systems with Applications",
-    year: "2024",
-    href: "https://doi.org/10.1016/j.eswa.2024.123660",
-  },
-  {
-    title:
-      "Dynamic Human–Artificial Intelligence Collaboration Framework for Adaptive Work Environments in Industry 5.0",
-    venue: "Artificial Intelligence and Communication Techniques in Industry 5.0",
-    year: "2024",
-    href: "https://doi.org/10.1201/9781003494027",
-  },
-];
+// Re-exported so existing `import { personas, type PersonaId } from
+// "@/lib/persona"` call sites (most components) don't need to change —
+// only server-side files that need this data at module-eval time (route
+// metadata, JSON-LD, opengraph-image) should import from personaData.ts
+// directly instead.
+export { personas, type PersonaId, type PersonaContent, type PaperItem, papers } from "@/lib/personaData";
 
 const PersonaContext = createContext<{
   persona: PersonaId;
@@ -98,13 +25,20 @@ const PersonaContext = createContext<{
 } | null>(null);
 
 /** Wraps the app; holds which persona is active. Not persisted across
- * reloads on purpose — every visit starts on the primary (devrel) persona,
- * switching is a same-session toggle. Switching plays a fullscreen
+ * reloads on purpose — every visit starts on whichever persona its URL
+ * represents (devrel at "/", math at "/math" — see app/math/page.tsx,
+ * which exists so that persona is actually indexable rather than only
+ * reachable by a client-side toggle). Switching plays a fullscreen
  * transition (see PersonaTransition) rather than swapping content
- * instantly — the actual persona flip happens partway through it, hidden
- * behind the overlay. */
+ * instantly — the actual persona flip (and the URL update that keeps it
+ * in sync with "/" vs "/math") happens partway through it, hidden behind
+ * the overlay. */
 export function PersonaProvider({ children }: { children: ReactNode }) {
-  const [persona, setPersona] = useState<PersonaId>("devrel");
+  const pathname = usePathname();
+  const router = useRouter();
+  const [persona, setPersona] = useState<PersonaId>(() =>
+    pathname === "/math" ? "math" : "devrel"
+  );
   const [transitioning, setTransitioning] = useState(false);
 
   const requestSwitch = useCallback(() => {
@@ -112,8 +46,15 @@ export function PersonaProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const handleSwap = useCallback(() => {
-    setPersona((p) => (p === "devrel" ? "math" : "devrel"));
-  }, []);
+    setPersona((p) => {
+      const next: PersonaId = p === "devrel" ? "math" : "devrel";
+      // No scroll reset — this should feel like a same-page toggle, not a
+      // navigation, even though it is one under the hood. replace (not
+      // push) so repeated toggling doesn't pile up browser-history entries.
+      router.replace(next === "math" ? "/math" : "/", { scroll: false });
+      return next;
+    });
+  }, [router]);
 
   const handleDone = useCallback(() => {
     setTransitioning(false);
