@@ -6,16 +6,25 @@ import Intro from "@/components/Intro";
 import ScrollProgress from "@/components/ScrollProgress";
 import "./globals.css";
 
+const title = "Aniket Bhattacharyea — Developer Relations & Technical Content";
+const description =
+  "Worry-free developer marketing. Technical content creation, DevRel consulting, and content strategy for developer tools companies.";
+
 export const metadata: Metadata = {
-  title: "Aniket Bhattacharyea — Developer Relations & Technical Content",
-  description:
-    "Worry-free developer marketing. Technical content creation, DevRel consulting, and content strategy for developer tools companies.",
+  title,
+  description,
   metadataBase: new URL("https://abhattacharyea.dev"),
   openGraph: {
-    title: "Aniket Bhattacharyea — Developer Relations & Technical Content",
-    description:
-      "Worry-free developer marketing for developer tools companies.",
+    title,
+    description,
     type: "website",
+    siteName: "Aniket Bhattacharyea",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
   },
 };
 

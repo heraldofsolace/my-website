@@ -22,9 +22,26 @@ export async function generateMetadata({
   const service = await getServiceBySlug(slug);
   if (!service) return {};
 
+  const title = `${service.name} — ${profile.name}`;
+
   return {
-    title: `${service.name} — ${profile.name}`,
+    title,
     description: service.summary,
+    alternates: {
+      canonical: `/services/${slug}`,
+    },
+    openGraph: {
+      title,
+      description: service.summary,
+      type: "website",
+    },
+    // See the blog post page's generateMetadata for why this is repeated
+    // here rather than inherited from the root layout.
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: service.summary,
+    },
   };
 }
 

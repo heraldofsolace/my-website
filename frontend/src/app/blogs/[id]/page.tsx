@@ -28,9 +28,45 @@ export async function generateMetadata({
   const post = await getPostByDocumentId(id);
   if (!post) return {};
 
+  const title = `${post.title} — ${profile.name}`;
+
   return {
-    title: `${post.title} — ${profile.name}`,
+    title,
     description: post.summary,
+    alternates: {
+      canonical: `/blogs/${post.documentId}`,
+    },
+    openGraph: {
+      title,
+      description: post.summary,
+      type: "article",
+      publishedTime: post.publishedAt,
+      modifiedTime: post.updatedAt,
+      authors: [profile.name],
+      // Falls back to the site-wide opengraph-image when there's no
+      // feature image — only override it here when we actually have one.
+      ...(post.feature_image && {
+        images: [
+          {
+            url: strapiMediaUrl(post.feature_image.url),
+            width: post.feature_image.width,
+            height: post.feature_image.height,
+            alt: post.feature_image.alternativeText ?? post.title,
+          },
+        ],
+      }),
+    },
+    // Metadata objects aren't deep-merged with the parent layout's — if we
+    // don't set our own `twitter` here, Twitter Cards for every post would
+    // silently fall back to the root layout's site-wide title/description.
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: post.summary,
+      ...(post.feature_image && {
+        images: [strapiMediaUrl(post.feature_image.url)],
+      }),
+    },
   };
 }
 
