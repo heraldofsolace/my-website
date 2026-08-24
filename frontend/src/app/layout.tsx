@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { display, mono } from "@/lib/fonts";
 import { PersonaProvider } from "@/lib/persona";
 import Cursor from "@/components/Cursor";
@@ -35,6 +36,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${display.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="grain cursor-none-desktop min-h-full bg-bg font-sans text-fg">
+        <Script
+          src="https://umami.abhattacharyea.dev/script.js"
+          data-website-id="66866d14-8fbd-4230-b1d4-361a05faaf7d"
+          strategy="afterInteractive"
+        />
         <PersonaProvider>
           <Intro />
           <ScrollProgress />
