@@ -6,6 +6,13 @@ import type {
 
 const STRAPI_URL = process.env.STRAPI_URL ?? "http://localhost:1337";
 
+// Server-only env vars (STRAPI_URL) are stripped from the client bundle —
+// `strapiMediaUrl` is also called from "use client" components (e.g.
+// BlocksContent, for inline body images), where process.env.STRAPI_URL is
+// always undefined. NEXT_PUBLIC_STRAPI_URL is the same value, just also
+// inlined into client code at build time so it actually resolves there.
+const PUBLIC_STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL ?? STRAPI_URL;
+
 export type ServiceData = APIResponseData<"api::service.service">;
 export type ServicePricingData = APIResponseData<"api::service-pricing.service-pricing">;
 export type PostData = APIResponseData<"api::post.post">;
@@ -13,9 +20,10 @@ export type ArticleCategoryData = APIResponseData<"api::article-category.article
 export type BlogPortfolioData = APIResponseData<"api::blog-portfolio.blog-portfolio">;
 export type AstrophotoData = APIResponseData<"api::astrophoto.astrophoto">;
 
-/** Resolves a Strapi media `url` (often relative) to an absolute URL. */
+/** Resolves a Strapi media `url` (often relative) to an absolute URL. Safe
+ * to call from client components — see PUBLIC_STRAPI_URL above. */
 export function strapiMediaUrl(url: string): string {
-  return /^https?:\/\//.test(url) ? url : `${STRAPI_URL}${url}`;
+  return /^https?:\/\//.test(url) ? url : `${PUBLIC_STRAPI_URL}${url}`;
 }
 
 async function strapiFetch<T>(
