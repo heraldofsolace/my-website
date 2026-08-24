@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { requestTiltPermission, subscribeTilt } from "@/lib/deviceTilt";
 
 // Density ramps, sparse → dense.
 const CHARS_DEFAULT = " .:-=+*#%@";
@@ -72,6 +73,44 @@ export default function AsciiField({
     }
     canvas.addEventListener("pointermove", onPointerMove);
     canvas.addEventListener("pointerleave", onPointerLeave);
+
+    // Mobile: no hover, so there's no ambient pointer position at all
+    // unless a finger is actively dragging. Fall back to device tilt for
+    // the same "glow follows you" effect — gated so it never fights an
+    // active touch-drag, which still wins outright.
+    let touching = false;
+    function onPointerDown(e: PointerEvent) {
+      if (e.pointerType === "touch") touching = true;
+    }
+    function onPointerUp(e: PointerEvent) {
+      if (e.pointerType === "touch") touching = false;
+    }
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointercancel", onPointerUp);
+
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    let unsubscribeTilt: (() => void) | undefined;
+    function onFirstTouch() {
+      requestTiltPermission();
+    }
+    if (coarsePointer && typeof window.DeviceOrientationEvent !== "undefined") {
+      unsubscribeTilt = subscribeTilt((gamma, beta) => {
+        if (touching) return;
+        // Comfortable one-handed tilt range while holding a phone upright:
+        // roughly ±30° left-right, 20°-80° front-back. Tuned by feel, not
+        // measured — adjust if it feels too twitchy or too dead.
+        const nx = Math.min(1, Math.max(0, (gamma + 30) / 60));
+        const ny = Math.min(1, Math.max(0, (beta - 20) / 60));
+        pointer.x = nx * cols;
+        pointer.y = ny * rows;
+        pointer.active = true;
+      });
+      canvas.addEventListener("touchstart", onFirstTouch, {
+        once: true,
+        passive: true,
+      });
+    }
 
     let raf = 0;
     let t = 0;
@@ -166,6 +205,11 @@ export default function AsciiField({
       io.disconnect();
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerleave", onPointerLeave);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointercancel", onPointerUp);
+      canvas.removeEventListener("touchstart", onFirstTouch);
+      unsubscribeTilt?.();
     };
   }, [clearCenter, glowRgb, chars]);
 
