@@ -44,7 +44,7 @@ export default function AsciiArt() {
 
       <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center px-6">
         <span className="font-mono text-xs uppercase tracking-[0.3em] text-muted sm:hidden">
-          Touch and drag
+          
         </span>
         <span className="hidden font-mono text-xs uppercase tracking-[0.3em] text-muted sm:inline">
           Move your cursor
