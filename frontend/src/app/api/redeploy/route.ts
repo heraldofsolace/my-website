@@ -1,8 +1,14 @@
 /**
  * Strapi (or anything else) POSTs here to trigger a Railway redeploy of this
  * service — the mechanism by which content updates go live, since pages are
- * rendered fresh per request (see `dynamic = "force-dynamic"` on the pages
- * that read from Strapi) rather than revalidated on a timer.
+ * static (Strapi fetches use `cache: "force-cache"`, no time-based
+ * revalidation) and only get fresh data on a rebuild.
+ *
+ * Note: Railway persists `.next/cache` across builds for faster
+ * recompiles, which would otherwise also replay Next's fetch Data Cache
+ * from the previous build, defeating this entirely — see the `build`
+ * script in package.json, which clears just `.next/cache/fetch-cache`
+ * before each build so a redeploy actually re-fetches from Strapi.
  *
  * Configure this as a webhook in Strapi (Settings > Webhooks), pointed at
  * POST /api/redeploy, with header `x-redeploy-secret: <REDEPLOY_SECRET>`.
