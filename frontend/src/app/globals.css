@@ -79,7 +79,13 @@ body {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .cursor-none-desktop {
+  /* `cursor: none` on just the body is inherited by descendants — but a
+     rule that directly matches an element (e.g. the browser's own default
+     `a:any-link { cursor: pointer }`) always wins over an inherited value,
+     regardless of origin. Target every descendant explicitly so nothing
+     can reassert its own cursor and show the native pointer through. */
+  .cursor-none-desktop,
+  .cursor-none-desktop * {
     cursor: none;
   }
 
