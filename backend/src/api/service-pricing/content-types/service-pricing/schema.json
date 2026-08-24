@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "service_pricings",
+  "info": {
+    "singularName": "service-pricing",
+    "pluralName": "service-pricings",
+    "displayName": "Service Pricing"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "price": {
+      "type": "string",
+      "required": true
+    },
+    "details": {
+      "type": "blocks",
+      "required": true
+    },
+    "service": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service.service",
+      "inversedBy": "service_pricings"
+    }
+  }
+}

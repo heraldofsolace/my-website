@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "astrophotos",
+  "info": {
+    "singularName": "astrophoto",
+    "pluralName": "astrophotos",
+    "displayName": "Astrophoto"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "Object": {
+      "type": "string"
+    },
+    "Location": {
+      "type": "string"
+    },
+    "Date": {
+      "type": "date"
+    },
+    "Multinight": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

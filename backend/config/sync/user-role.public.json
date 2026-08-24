@@ -1,0 +1,114 @@
+{
+  "documentId": "j73oaddaoq1qat4td6xpr999",
+  "name": "Public",
+  "description": "Default role given to unauthenticated user.",
+  "type": "public",
+  "locale": null,
+  "permissions": [
+    {
+      "documentId": "xuuwsazcxcw4joffzvtiqlhh",
+      "action": "plugin::users-permissions.auth.callback",
+      "locale": null
+    },
+    {
+      "documentId": "qerfpw6mqrdtopj6pm9nrzes",
+      "action": "plugin::users-permissions.auth.connect",
+      "locale": null
+    },
+    {
+      "documentId": "d4sz177g043ypu6t83hvo1xy",
+      "action": "plugin::users-permissions.auth.emailConfirmation",
+      "locale": null
+    },
+    {
+      "documentId": "oc7l9mioezimccvifbqpvozv",
+      "action": "plugin::users-permissions.auth.forgotPassword",
+      "locale": null
+    },
+    {
+      "documentId": "z287idlehtnxabrwpjj56ibp",
+      "action": "plugin::users-permissions.auth.register",
+      "locale": null
+    },
+    {
+      "documentId": "h9nqk8xa3sdf4yaskzz431dg",
+      "action": "plugin::users-permissions.auth.resetPassword",
+      "locale": null
+    },
+    {
+      "documentId": "qrzjxl97pfza8p5p4h0fnmgy",
+      "action": "plugin::users-permissions.auth.sendEmailConfirmation",
+      "locale": null
+    },
+    {
+      "documentId": "177w181l8uhvw9ijd5n6qz7na",
+      "action": "api::service.service.find",
+      "locale": null
+    },
+    {
+      "documentId": "w9vh7npt2itnynnwt3ogegxv6",
+      "action": "api::service.service.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "xyhdfor0xcis3c8nls0adswzn",
+      "action": "api::service-pricing.service-pricing.find",
+      "locale": null
+    },
+    {
+      "documentId": "64nj3gj4l6ye84fdxbz3rvhak",
+      "action": "api::service-pricing.service-pricing.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "ld2qa7pgtt0fqhj844rswapqu",
+      "action": "api::post.post.find",
+      "locale": null
+    },
+    {
+      "documentId": "rwc506ge0y9i7d07s54lgvxiu",
+      "action": "api::post.post.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "r6ptkyfadpbutqol0zc9yxhf4",
+      "action": "api::article-category.article-category.find",
+      "locale": null
+    },
+    {
+      "documentId": "c959n2px9jnk1uvv38t5w4twp",
+      "action": "api::article-category.article-category.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "uqv373p2tmbacb6fhofp5h2v4",
+      "action": "plugin::upload.file.find",
+      "locale": null
+    },
+    {
+      "documentId": "900bu7s79c7bo9pty0ebjjsch",
+      "action": "plugin::upload.file.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "c27nvnly0mh6xst29kzw3ki7l",
+      "action": "api::blog-portfolio.blog-portfolio.find",
+      "locale": null
+    },
+    {
+      "documentId": "z1j9bddj4ovkxh6cynnn9k8mg",
+      "action": "api::blog-portfolio.blog-portfolio.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "ycc09c3zrrrianrcj3katiala",
+      "action": "api::astrophoto.astrophoto.find",
+      "locale": null
+    },
+    {
+      "documentId": "duacslrrtb9p6m5nodl2kyash",
+      "action": "api::astrophoto.astrophoto.findOne",
+      "locale": null
+    }
+  ]
+}

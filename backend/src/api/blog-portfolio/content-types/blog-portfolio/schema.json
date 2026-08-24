@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_portfolios",
+  "info": {
+    "singularName": "blog-portfolio",
+    "pluralName": "blog-portfolios",
+    "displayName": "Blog Portfolio"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "link": {
+      "type": "string",
+      "required": true
+    },
+    "client": {
+      "type": "string",
+      "required": true
+    },
+    "published_date": {
+      "type": "date"
+    },
+    "article_categories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::article-category.article-category",
+      "mappedBy": "blog_portfolios"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "blog_portfolios"
+    }
+  }
+}

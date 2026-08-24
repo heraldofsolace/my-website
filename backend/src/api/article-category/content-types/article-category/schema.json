@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "article_categories",
+  "info": {
+    "singularName": "article-category",
+    "pluralName": "article-categories",
+    "displayName": "Article Category"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name"
+    },
+    "posts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::post.post",
+      "inversedBy": "article_categories"
+    },
+    "blog_portfolios": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog-portfolio.blog-portfolio",
+      "inversedBy": "article_categories"
+    }
+  }
+}
