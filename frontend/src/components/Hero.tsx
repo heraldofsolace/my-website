@@ -67,7 +67,10 @@ export default function Hero() {
 
         <h1 className="font-display text-[10vw] font-semibold leading-[0.9] tracking-tight sm:text-[9vw] lg:text-[7.2vw]">
           {["Aniket", "Bhattacharyea"].map((line, i) => (
-            <span key={line} className="block overflow-hidden">
+            // pb here (not on the h1/motion.span) gives descenders like the
+            // "y" in Bhattacharyea room inside this clip box, without
+            // touching the reveal animation's own y:"100%" math below.
+            <span key={line} className="block overflow-hidden pb-[0.12em]">
               <motion.span
                 className="block"
                 initial={{ y: "100%" }}
