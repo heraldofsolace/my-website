@@ -11,6 +11,7 @@
   "dependencies": {
     "@strapi/blocks-react-renderer": "^1.0.2",
     "framer-motion": "^13.1.1",
+    "husky": "^9.1.7",
     "next": "16.3.2",
     "qs": "^6.15.1",
     "react": "19.2.8",
