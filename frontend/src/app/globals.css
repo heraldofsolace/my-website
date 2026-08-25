@@ -29,6 +29,15 @@
   border-color: var(--line);
 }
 
+/* The browser's own default focus outline computes to a near-black color
+   on this dark theme — technically present (nothing here removes it) but
+   barely perceptible against --bg. :focus-visible (not :focus) so it only
+   shows for keyboard navigation, not every mouse click. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 html {
   background: var(--bg);
   scroll-behavior: smooth;

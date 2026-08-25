@@ -37,7 +37,7 @@ export default async function BlogsPage({
   return (
     <>
       <Nav />
-      <main>
+      <main id="main-content">
         <section className="border-b border-line px-6 pb-16 pt-36 md:px-10">
           <div className="mx-auto max-w-7xl">
             <span className="font-mono text-xs uppercase tracking-[0.3em] text-accent">

@@ -54,7 +54,7 @@ export default async function HomeSections() {
   return (
     <>
       <Nav />
-      <main>
+      <main id="main-content">
         <Hero />
         <Statement />
         <Work items={workItems} />

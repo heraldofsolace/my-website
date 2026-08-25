@@ -87,13 +87,17 @@ function ServicePanel({
             {row.price}
           </p>
         )}
-        <h3
+        {/* h2, not h3 — the "Services — N/M" eyebrow above is a styled
+            <span>, not an actual heading, so this is the first heading in
+            the section (axe's heading-order rule flagged the h3-with-no-h2
+            this used to be). */}
+        <h2
           className={`mt-4 font-display text-4xl font-medium tracking-tight sm:text-6xl lg:text-7xl ${
             isRed ? "text-bg" : "text-fg"
           }`}
         >
           {row.name}
-        </h3>
+        </h2>
         <p
           className={`mt-8 max-w-xl text-lg sm:text-xl ${
             isRed ? "text-bg/70" : "text-muted"

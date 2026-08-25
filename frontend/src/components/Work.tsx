@@ -100,13 +100,18 @@ export default function Work({ items }: { items: BlogPortfolioData[] }) {
                     </span>
 
                     <div className="min-w-0">
-                      <motion.h3
+                      {/* h2, not h3 — the "Selected Work"/"Published Papers"
+                          eyebrow to the left is a styled <span>, not an
+                          actual heading, so this is the first heading in
+                          the section (axe's heading-order rule flagged the
+                          h3-with-no-h2 this used to be). */}
+                      <motion.h2
                         variants={{ rest: { x: 0 }, hover: { x: 8 } }}
                         transition={{ type: "spring", stiffness: 300, damping: 26 }}
                         className="truncate font-display text-lg font-medium tracking-tight sm:text-xl"
                       >
                         {row.title}
-                      </motion.h3>
+                      </motion.h2>
                       <p className="mt-1 text-sm text-muted sm:hidden">
                         {row.meta} · {row.tag}
                       </p>

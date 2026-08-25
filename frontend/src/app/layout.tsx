@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { MotionConfig } from "framer-motion";
 import { display, mono } from "@/lib/fonts";
 import { PersonaProvider } from "@/lib/persona";
 import Cursor from "@/components/Cursor";
@@ -38,19 +39,37 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${display.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="grain cursor-none-desktop min-h-full bg-bg font-sans text-fg">
+        {/* Invisible until focused (first Tab stop on every page) — lets
+            keyboard/screen-reader users jump straight past the nav (logo,
+            5 links, persona toggle, mobile menu button) to the actual page
+            content instead of tabbing through all of it every time. */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-full focus:bg-fg focus:px-6 focus:py-3 focus:font-mono focus:text-xs focus:uppercase focus:tracking-widest focus:text-bg"
+        >
+          Skip to content
+        </a>
         <Script
           src="https://umami.abhattacharyea.dev/script.js"
           data-website-id="66866d14-8fbd-4230-b1d4-361a05faaf7d"
           strategy="afterInteractive"
         />
         <ConsoleEgg />
-        <PersonaProvider>
-          <Intro />
-          <ScrollProgress />
-          <Cursor />
-          <PiEasterEgg />
-          {children}
-        </PersonaProvider>
+        {/* reducedMotion="user" makes every motion.* component site-wide
+            respect prefers-reduced-motion automatically (essentially free —
+            transforms/opacity still apply, just instantly instead of
+            animated) — the alternative was manually checking the media
+            query in every single animated component individually, which
+            most of them didn't do (only AsciiField and Intro did). */}
+        <MotionConfig reducedMotion="user">
+          <PersonaProvider>
+            <Intro />
+            <ScrollProgress />
+            <Cursor />
+            <PiEasterEgg />
+            {children}
+          </PersonaProvider>
+        </MotionConfig>
       </body>
     </html>
   );

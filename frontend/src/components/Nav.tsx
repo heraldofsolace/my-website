@@ -60,6 +60,8 @@ export default function Nav() {
         <button
           className="flex flex-col gap-1.5 md:hidden"
           aria-label="Toggle menu"
+          aria-expanded={open}
+          aria-controls="mobile-nav"
           onClick={() => setOpen((o) => !o)}
         >
           <motion.span
@@ -78,6 +80,7 @@ export default function Nav() {
       </div>
 
       <motion.div
+        id="mobile-nav"
         initial={false}
         animate={{ height: open ? "auto" : 0 }}
         className="overflow-hidden md:hidden"

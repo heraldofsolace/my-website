@@ -97,7 +97,7 @@ export default async function BlogPostPage({
     <>
       <ArticleJsonLd post={post} />
       <Nav />
-      <main>
+      <main id="main-content">
         <section className="border-b border-line px-6 pb-16 pt-36 md:px-10">
           <div className="mx-auto max-w-3xl">
             <Link

@@ -68,7 +68,7 @@ export default async function ServicePage({
   return (
     <>
       <Nav />
-      <main>
+      <main id="main-content">
         <section className="relative overflow-hidden border-b border-line px-6 pb-20 pt-36 md:px-10">
           <span
             aria-hidden
