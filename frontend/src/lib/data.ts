@@ -53,10 +53,17 @@ export const teachingPlaces: Client[] = [
 
 // Selected work (blog-portfolio) is fetched from Strapi — see src/lib/strapi.ts.
 
+// `hash` only, not a full href — Nav.tsx prefixes it with whichever
+// persona's own path ("/" or "/math") is currently active. A hardcoded
+// "/#work" broke navigation on math: clicking any link, even the logo,
+// jumped back to devrel instead of scrolling within the current page.
+// `devrelOnly` hides an item entirely on math rather than linking to a
+// section that isn't there (Projects.tsx renders nothing on math).
 export const nav = [
-  { label: "Work", href: "/#work" },
-  { label: "About", href: "/#about" },
-  { label: "Services", href: "/#services" },
-  { label: "Writing", href: "/#writing" },
-  { label: "Contact", href: "/#contact" },
+  { label: "Work", hash: "work" },
+  { label: "Projects", hash: "projects", devrelOnly: true },
+  { label: "About", hash: "about" },
+  { label: "Services", hash: "services" },
+  { label: "Writing", hash: "writing" },
+  { label: "Contact", hash: "contact" },
 ];

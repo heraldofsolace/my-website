@@ -4,16 +4,28 @@ import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 import { nav, profile } from "@/lib/data";
+import { usePersona } from "@/lib/persona";
 import PersonaToggle from "./PersonaToggle";
 
 export default function Nav() {
   const [solid, setSolid] = useState(false);
   const [open, setOpen] = useState(false);
   const { scrollY } = useScroll();
+  const { persona } = usePersona();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setSolid(latest > 40);
   });
+
+  // A hardcoded "/#work" broke navigation on math — every link, including
+  // the logo, jumped back to devrel instead of scrolling within the
+  // current persona's own page. Prefix with whichever path is active, and
+  // drop devrel-only items (Projects) rather than link to a section that
+  // isn't there on math (Projects.tsx renders nothing there).
+  const basePath = persona === "math" ? "/math" : "/";
+  const items = nav
+    .filter((item) => !item.devrelOnly || persona === "devrel")
+    .map((item) => ({ ...item, href: `${basePath}#${item.hash}` }));
 
   return (
     <header
@@ -23,7 +35,7 @@ export default function Nav() {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 md:px-10">
         <Link
-          href="/"
+          href={basePath}
           data-cursor-hover
           className="font-display text-lg font-semibold tracking-tight"
         >
@@ -32,9 +44,9 @@ export default function Nav() {
         </Link>
 
         <nav className="hidden items-center gap-8 font-mono text-xs uppercase tracking-widest text-muted md:flex">
-          {nav.map((item) => (
+          {items.map((item) => (
             <Link
-              key={item.href}
+              key={item.hash}
               href={item.href}
               data-cursor-hover
               className="transition-colors hover:text-fg"
@@ -86,9 +98,9 @@ export default function Nav() {
         className="overflow-hidden md:hidden"
       >
         <nav className="flex flex-col gap-1 border-t border-line bg-bg px-6 py-4 font-mono text-sm uppercase tracking-widest text-muted">
-          {nav.map((item) => (
+          {items.map((item) => (
             <Link
-              key={item.href}
+              key={item.hash}
               href={item.href}
               onClick={() => setOpen(false)}
               className="py-2"
