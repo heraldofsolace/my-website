@@ -254,6 +254,27 @@ export default function Hero() {
             Get in touch
           </MagneticLink>
         </motion.div>
+
+        {persona === "math" && (
+          // Hint that the background isn't a stock illustration — the dot
+          // borrows the "recording" convention (small pulsing dot = live)
+          // rather than spelling it out in a full sentence. Nested inside
+          // this (relatively-positioned) content column rather than the
+          // whole section, so bottom-0 lands right above the marquee band
+          // below instead of guessing an offset that has to clear it.
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.7, delay: 0.9 }}
+            className="pointer-events-none absolute bottom-0 right-6 hidden items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted sm:flex md:right-10"
+          >
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+            </span>
+            Live planetary positions
+          </motion.div>
+        )}
       </div>
 
       <div className="relative mt-16 border-y border-line py-5 bg-red-500">
