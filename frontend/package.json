@@ -33,6 +33,12 @@
   "engines": {
     "node": ">=20.0.0 <=22.x.x"
   },
+  "browserslist": [
+    "chrome >= 96",
+    "edge >= 96",
+    "firefox >= 96",
+    "safari >= 15.4"
+  ],
   "nx": {
     "targets": {
       "build": {
