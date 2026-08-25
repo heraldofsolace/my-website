@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { profile } from "@/lib/data";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { hash } from "@/lib/pseudoRandom";
+import { introQuotes, type IntroQuote } from "@/lib/introQuotes";
 
 const HOLD_MS = 750;
 const SPLIT_DURATION = 0.9;
@@ -25,6 +26,21 @@ const OVERLAY_DURATION = Math.max(SPLIT_DURATION, DROPS_END);
  */
 export default function Intro() {
   const [phase, setPhase] = useState<"hold" | "split" | "done">("hold");
+
+  // Picked once, client-side only, and shared by both mirrored halves below
+  // (each picking independently would show two different quotes at once).
+  // Starts null — rendered as the site name in the meantime — rather than
+  // via Math.random() at render time, which would differ between server
+  // and client and cause a hydration mismatch (same class of bug as the
+  // Saturn cursor tilt earlier in this file's sibling components).
+  const [quote, setQuote] = useState<IntroQuote | null>(null);
+  useEffect(() => {
+    // Deliberately synchronous: Math.random() is the external-system read
+    // that the null fallback above exists to defer past SSR/first paint —
+    // there's no client/server-agreeable way to pick it during render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setQuote(introQuotes[Math.floor(Math.random() * introQuotes.length)]);
+  }, []);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia(
@@ -68,7 +84,7 @@ export default function Intro() {
       >
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-x-0 top-0 flex h-[100svh] items-center justify-center px-6">
-            <NameMark />
+            <QuoteMark quote={quote} />
           </div>
         </div>
         {/* Anchored to this bar's own bottom edge (the seam), so it rides
@@ -83,23 +99,80 @@ export default function Intro() {
         transition={{ duration: SPLIT_DURATION, ease: [0.76, 0, 0.24, 1] }}
       >
         <div className="absolute inset-x-0 bottom-0 flex h-[100svh] items-center justify-center px-6">
-          <NameMark />
+          <QuoteMark quote={quote} />
         </div>
       </motion.div>
     </div>
   );
 }
 
-function NameMark() {
+// Quotes vary wildly in length (a one-liner pun vs. someone pasting in a
+// whole lecture transcript), so a fixed font size can't work for all of
+// them — instead measure the rendered text and shrink it to fit.
+const MAX_QUOTE_FONT_PX = 40;
+const MIN_QUOTE_FONT_PX = 9;
+
+function QuoteMark({ quote }: { quote: IntroQuote | null }) {
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [fontSize, setFontSize] = useState(MAX_QUOTE_FONT_PX);
+
+  useLayoutEffect(() => {
+    if (!quote || !textRef.current) return;
+    const el = textRef.current;
+    // Both mirrored halves center this same content within their own
+    // full-viewport-height box, each cropped to just its own half (see the
+    // top/bottom overflow-hidden clipping in Intro's render above) — so
+    // between the two, nearly the *entire* centered content is reconstructed
+    // across the seam, not just one half's worth. Budget close to a full
+    // window height, not half of it. Tuned by feel, not measured precisely,
+    // same as this file's other animation constants.
+    const heightBudget = window.innerHeight * 0.78;
+
+    let size = MAX_QUOTE_FONT_PX;
+    for (let i = 0; i < 8; i++) {
+      el.style.fontSize = `${size}px`;
+      const overflowRatio = el.scrollHeight / heightBudget;
+      if (overflowRatio <= 1 || size <= MIN_QUOTE_FONT_PX) break;
+      // Shrink proportionally to how far over budget it is rather than by
+      // a fixed step — a one-line pun and a wall of text need very
+      // different amounts of shrinking to converge in a handful of passes.
+      size = Math.max(MIN_QUOTE_FONT_PX, Math.floor(size / overflowRatio));
+    }
+    setFontSize(size);
+  }, [quote]);
+
+  // No quote landed yet (very first paint, pre-hydration) — render nothing
+  // rather than the name as a placeholder. The red field is already fully
+  // visible either way; the only difference is whether text is in it yet,
+  // and that gap is a single frame at most. Showing the name first and
+  // then swapping in the quote a moment later reads as a visible flash —
+  // worse than a blank beat, not better.
+  if (!quote) return null;
+
   return (
-    <motion.h1
+    <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="text-center font-display text-[6.5vw] font-semibold leading-[1.05] tracking-tight text-bg sm:text-[6vw] lg:text-[4.5vw]"
+      // max-h + overflow-hidden is a last-resort safety net, not the
+      // primary mechanism — the shrink loop above should always land
+      // under budget first. Keeps an even longer future quote contained
+      // rather than spilling into the rest of the page.
+      className="mx-auto max-h-[80svh] max-w-4xl overflow-hidden text-center"
     >
-      {profile.name}
-    </motion.h1>
+      <p
+        ref={textRef}
+        className="font-display font-semibold leading-tight tracking-tight text-bg"
+        style={{ fontSize }}
+      >
+        {quote.text}
+      </p>
+      {quote.author && (
+        <p className="mt-4 font-mono text-xs uppercase tracking-[0.3em] text-bg/70">
+          — {quote.author}
+        </p>
+      )}
+    </motion.div>
   );
 }
 
@@ -122,13 +195,6 @@ function GooFilter() {
 }
 
 const DROP_COUNT = 9;
-
-// Deterministic pseudo-random in [0, 1), seeded by index — avoids
-// Math.random() hydration mismatches between server and client.
-function hash(seed: number) {
-  const x = Math.sin(seed * 12.9898) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 /**
  * Drops hanging off the seam where the two halves meet, right as they

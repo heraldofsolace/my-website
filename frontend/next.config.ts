@@ -31,6 +31,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Easter egg for anyone poking at the Network tab — see ConsoleEgg.tsx
+  // for the console-side equivalent (whoami()/hire()).
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-Are-You-Hiring",
+            value: "Probably. Try whoami() in the console.",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

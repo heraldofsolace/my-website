@@ -5,6 +5,8 @@ import { PersonaProvider } from "@/lib/persona";
 import Cursor from "@/components/Cursor";
 import Intro from "@/components/Intro";
 import ScrollProgress from "@/components/ScrollProgress";
+import ConsoleEgg from "@/components/ConsoleEgg";
+import PiEasterEgg from "@/components/PiEasterEgg";
 import "./globals.css";
 
 const title = "Aniket Bhattacharyea — Developer Relations & Technical Content";
@@ -41,10 +43,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           data-website-id="66866d14-8fbd-4230-b1d4-361a05faaf7d"
           strategy="afterInteractive"
         />
+        <ConsoleEgg />
         <PersonaProvider>
           <Intro />
           <ScrollProgress />
           <Cursor />
+          <PiEasterEgg />
           {children}
         </PersonaProvider>
       </body>

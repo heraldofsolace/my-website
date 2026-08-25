@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -41,19 +42,35 @@ export function PersonaProvider({ children }: { children: ReactNode }) {
   );
   const [transitioning, setTransitioning] = useState(false);
 
+  // Mirrors `persona` without handleSwap needing it as a dependency.
+  // PersonaTransition stays mounted for the whole transition and re-runs
+  // its timer-scheduling effect whenever onSwap's identity changes — so a
+  // handleSwap that changed identity every time persona changed (e.g. via
+  // a `[persona, router]` dependency array) would re-trigger that effect
+  // right after firing, calling itself again and flipping persona back and
+  // forth forever. Keeping handleSwap referentially stable avoids that.
+  const personaRef = useRef(persona);
+  useEffect(() => {
+    personaRef.current = persona;
+  }, [persona]);
+
   const requestSwitch = useCallback(() => {
     setTransitioning(true);
   }, []);
 
   const handleSwap = useCallback(() => {
-    setPersona((p) => {
-      const next: PersonaId = p === "devrel" ? "math" : "devrel";
-      // No scroll reset — this should feel like a same-page toggle, not a
-      // navigation, even though it is one under the hood. replace (not
-      // push) so repeated toggling doesn't pile up browser-history entries.
-      router.replace(next === "math" ? "/math" : "/", { scroll: false });
-      return next;
-    });
+    // Plain (non-functional) setState + router.replace as sibling calls,
+    // not one nested inside the other — router.replace triggers its own
+    // setState internally, and React can invoke a functional updater during
+    // render, which doesn't allow triggering another component's setState
+    // from inside it ("Cannot update a component while rendering a
+    // different component").
+    const next: PersonaId = personaRef.current === "devrel" ? "math" : "devrel";
+    setPersona(next);
+    // No scroll reset — this should feel like a same-page toggle, not a
+    // navigation, even though it is one under the hood. replace (not push)
+    // so repeated toggling doesn't pile up browser-history entries.
+    router.replace(next === "math" ? "/math" : "/", { scroll: false });
   }, [router]);
 
   const handleDone = useCallback(() => {

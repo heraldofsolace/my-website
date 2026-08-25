@@ -1,14 +1,119 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import MagneticLink from "./MagneticLink";
 import { profile } from "@/lib/data";
 import { personas, usePersona } from "@/lib/persona";
+import { hash } from "@/lib/pseudoRandom";
+import { PI_DIGITS } from "@/lib/piDigits";
+
+const NAME_LINES = ["Aniket", "Bhattacharyea"];
+
+// Easter egg, math persona only: click the emphasized "precision" in the
+// bio and it counts up pi's digits in its place, one more per click — a
+// pun on the word itself. Wraps back to "precision" once it runs out of
+// digits to show.
+const MAX_PRECISION_CLICKS = PI_DIGITS.length + 1;
+
+function precisionText(clicks: number): string {
+  if (clicks <= 0) return "precision";
+  const digits = Math.min(clicks - 1, PI_DIGITS.length);
+  return digits === 0 ? "3" : `3.${PI_DIGITS.slice(0, digits)}`;
+}
+
+// Easter egg: click the name a few times in a row and it breaks apart —
+// not advertised anywhere in the UI on purpose.
+const BREAK_CLICKS = 5;
+const BREAK_CLICK_WINDOW_MS = 2500;
+const SHATTER_DURATION_S = 0.6;
+const OUCH_HOLD_MS = 3000;
+
+type NamePhase = "idle" | "shatter" | "ouch";
+
+/** Same per-character fly-apart trick as PersonaTransition, but biased to
+ * fall (positive dy) rather than scatter evenly — reads as "breaking and
+ * falling apart" rather than an explosion. */
+function ShatterName() {
+  let i = 0;
+  return NAME_LINES.map((line) => (
+    <span key={line} className="block overflow-hidden pb-[0.12em]">
+      <span className="block">
+        {line.split("").map((ch) => {
+          const seed = i++;
+          const dx = (hash(seed * 3.1 + 1) - 0.5) * 260;
+          const dy = 60 + hash(seed * 5.7 + 2) * 220;
+          const rotate = (hash(seed * 7.3 + 3) - 0.5) * 220;
+          return (
+            <motion.span
+              key={seed}
+              className="inline-block"
+              initial={{ x: 0, y: 0, rotate: 0, opacity: 1 }}
+              animate={{ x: dx, y: dy, rotate, opacity: 0 }}
+              transition={{ duration: SHATTER_DURATION_S, ease: [0.4, 0, 0.2, 1] }}
+            >
+              {ch}
+            </motion.span>
+          );
+        })}
+      </span>
+    </span>
+  ));
+}
 
 export default function Hero() {
   const { persona } = usePersona();
   const content = personas[persona];
+
+  const [namePhase, setNamePhase] = useState<NamePhase>("idle");
+  const clickCountRef = useRef(0);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
+
+  const [precisionClicks, setPrecisionClicks] = useState(0);
+  function handlePrecisionClick() {
+    setPrecisionClicks((c) => (c >= MAX_PRECISION_CLICKS ? 0 : c + 1));
+  }
+  // Reset on persona switch — Hero doesn't unmount when the persona flips,
+  // so without this, switching to devrel and back to math would resume
+  // straight into digits instead of starting over from "precision". Set
+  // during render (React's documented pattern for adjusting state when a
+  // prop changes: https://react.dev/reference/react/useState#storing-information-from-previous-renders),
+  // not in an effect, to avoid an extra render/commit cycle for it.
+  const [lastPersona, setLastPersona] = useState(persona);
+  if (persona !== lastPersona) {
+    setLastPersona(persona);
+    if (persona !== "math") setPrecisionClicks(0);
+  }
+
+  useEffect(() => {
+    if (namePhase === "shatter") {
+      const t = setTimeout(() => setNamePhase("ouch"), SHATTER_DURATION_S * 1000);
+      return () => clearTimeout(t);
+    }
+    if (namePhase === "ouch") {
+      const t = setTimeout(() => setNamePhase("idle"), OUCH_HOLD_MS);
+      return () => clearTimeout(t);
+    }
+  }, [namePhase]);
+
+  function handleNameClick() {
+    if (namePhase !== "idle") return; // ignore clicks mid-animation
+    clickCountRef.current += 1;
+    clearTimeout(clickTimerRef.current);
+
+    if (clickCountRef.current >= BREAK_CLICKS) {
+      clickCountRef.current = 0;
+      setNamePhase("shatter");
+      return;
+    }
+
+    clickTimerRef.current = setTimeout(() => {
+      clickCountRef.current = 0;
+    }, BREAK_CLICK_WINDOW_MS);
+  }
 
   return (
     <section
@@ -53,38 +158,54 @@ export default function Hero() {
         >
           {content.role} — {profile.location}
         </motion.p>
-
-        <p className="overflow-hidden text-2xl text-accent-soft sm:text-3xl">
-          <motion.span
-            className="block"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.9, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-          >
-            I am
-          </motion.span>
-        </p>
-
-        <h1 className="font-display text-[10vw] font-semibold leading-[0.9] tracking-tight sm:text-[9vw] lg:text-[7.2vw]">
-          {["Aniket", "Bhattacharyea"].map((line, i) => (
-            // pb here (not on the h1/motion.span) gives descenders like the
-            // "y" in Bhattacharyea room inside this clip box, without
-            // touching the reveal animation's own y:"100%" math below.
-            <span key={line} className="block overflow-hidden pb-[0.12em]">
-              <motion.span
-                className="block"
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                transition={{
-                  duration: 0.9,
-                  delay: 0.2 + i * 0.08,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                {line}
-              </motion.span>
-            </span>
-          ))}
+        <h1
+          onClick={handleNameClick}
+          // lg's 7.2vw has no ceiling tied to the max-w-7xl container below
+          // it — past ~1280px viewport width the container's content area
+          // freezes at ~1200px while 7.2vw keeps growing with the window,
+          // so on a wide-enough monitor (2560px+; confirmed via measured
+          // text width vs. container width, not just eyeballed) the name
+          // outgrows its box and "Bhattacharyea" clips on the right edge.
+          // clamp()'s max caps it at the container's real ceiling instead.
+          className="select-none font-display text-[10vw] font-semibold leading-[0.9] tracking-tight sm:text-[9vw] lg:text-[clamp(0px,7.2vw,150px)]"
+        >
+          {namePhase === "idle" &&
+            // Re-mounts (and so replays this slide-up reveal) every time
+            // namePhase returns to "idle" — including right after the
+            // break/"Ouch" easter egg, where it doubles as a "snapping back
+            // into place" recovery animation for free.
+            NAME_LINES.map((line, i) => (
+              // pb here (not on the h1/motion.span) gives descenders like
+              // the "y" in Bhattacharyea room inside this clip box, without
+              // touching the reveal animation's own y:"100%" math below.
+              <span key={line} className="block overflow-hidden pb-[0.12em]">
+                <motion.span
+                  className="block"
+                  initial={{ y: "150%" }}
+                  animate={{ y: 0 }}
+                  transition={{
+                    duration: 0.9,
+                    delay: 1 + i * 0.08,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  {line}
+                </motion.span>
+              </span>
+            ))}
+          {namePhase === "shatter" && <ShatterName />}
+          {namePhase === "ouch" && (
+            <motion.div
+              className="block text-accent flex flex-col justify-center gap-2 text-[0.6em] font-mono uppercase tracking-widest sm:text-[0.8em]"
+              initial={{ scale: 0.4, rotate: -8, opacity: 0 }}
+              animate={{ scale: 1, rotate: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 12 }}
+            >
+              <span>Ouch</span>
+              <span>:(</span>
+            </motion.div>
+            
+          )}
         </h1>
 
         <motion.p
@@ -94,7 +215,14 @@ export default function Hero() {
           className="mt-8 max-w-xl text-lg text-muted sm:text-xl"
         >
           {content.heroBioBefore}
-          <span className="text-fg">{content.heroBioEmphasis}</span>
+          <span
+            className="select-none text-fg"
+            onClick={persona === "math" ? handlePrecisionClick : undefined}
+          >
+            {persona === "math"
+              ? precisionText(precisionClicks)
+              : content.heroBioEmphasis}
+          </span>
           {content.heroBioAfter}
         </motion.p>
 

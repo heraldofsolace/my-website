@@ -97,11 +97,12 @@ export default function AsciiField({
     if (coarsePointer && typeof window.DeviceOrientationEvent !== "undefined") {
       unsubscribeTilt = subscribeTilt((gamma, beta) => {
         if (touching) return;
-        // Comfortable one-handed tilt range while holding a phone upright:
-        // roughly ±30° left-right, 20°-80° front-back. Tuned by feel, not
+        // Centered on holding the phone flat in your hand (beta ≈ 0°,
+        // screen facing up) as the rest position, tilting up to ±30°
+        // left-right and ±40° forward-back from there. Tuned by feel, not
         // measured — adjust if it feels too twitchy or too dead.
         const nx = Math.min(1, Math.max(0, (gamma + 30) / 60));
-        const ny = Math.min(1, Math.max(0, (beta - 20) / 60));
+        const ny = Math.min(1, Math.max(0, (beta + 40) / 80));
         pointer.x = nx * cols;
         pointer.y = ny * rows;
         pointer.active = true;

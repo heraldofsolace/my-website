@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { hash } from "@/lib/pseudoRandom";
 
 const HOLD_MS = 550;
 const SHATTER_DURATION = 1;
@@ -17,13 +18,6 @@ const TEXT = "Loading the other side";
 // content of an inline-block span and gets collapsed away by normal CSS
 // whitespace rules, which is exactly the "no gap between letters" bug.
 const NBSP = " ";
-
-// Deterministic pseudo-random in [0, 1), seeded by index — avoids
-// Math.random() hydration mismatches (matches the pattern in Intro.tsx).
-function hash(seed: number) {
-  const x = Math.sin(seed * 12.9898) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 /**
  * Fullscreen red overlay shown while switching persona: the text holds
