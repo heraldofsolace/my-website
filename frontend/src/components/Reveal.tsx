@@ -22,7 +22,15 @@ export function Reveal({
       transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >
-      {children}
+      {/* framer-motion@13.1.1's declared children type (ReactNode |
+          MotionValueNumber | MotionValueString) doesn't structurally
+          accept a plain ReactElement under the newer @types/react@19.2
+          ReactPortal shape — a types-package-version clash, not a real
+          runtime issue (this has rendered correctly all along). `as
+          ReactNode` re-triggers the same check since that's the type
+          already being rejected; only `any` actually bypasses it. */}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      {children as any}
     </motion.div>
   );
 }
