@@ -20,6 +20,9 @@
     "lint": {
       "cache": true
     },
+    "typecheck": {
+      "cache": true
+    },
     "dev": {
       "cache": false
     },

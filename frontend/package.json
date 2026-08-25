@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "rm -rf .next/cache/fetch-cache && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@strapi/blocks-react-renderer": "^1.0.2",

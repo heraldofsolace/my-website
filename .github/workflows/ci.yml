@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontend:
+    name: Frontend (typecheck, lint, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Root install: this is an npm workspaces monorepo with a single
+      # root-level package-lock.json (no per-package lockfile), so `npm ci`
+      # has to run here, not inside frontend/.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      # `next build` statically fetches from Strapi at build time (blog
+      # posts, services) with no error handling for an unreachable backend,
+      # so this points at the real production Strapi rather than a local
+      # one CI doesn't have — same public, read-only API URL already baked
+      # into next.config.ts's remotePatterns, not a secret.
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          STRAPI_URL: https://strapi.abhattacharyea.dev
+          NEXT_PUBLIC_STRAPI_URL: https://strapi.abhattacharyea.dev
