@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "projects",
+  "info": {
+    "singularName": "project",
+    "pluralName": "projects",
+    "displayName": "Project",
+    "description": "Software development portfolio items — apps, tools, open source work. Separate from Blog Portfolio (which is content/DevRel work) since these need fields that don't apply there: tech stack, repo/live links, a screenshot."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "tech_stack": {
+      "type": "json",
+      "description": "Array of strings, e.g. [\"Next.js\", \"TypeScript\", \"Postgres\"]"
+    },
+    "github_url": {
+      "type": "string"
+    },
+    "live_url": {
+      "type": "string"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "published_date": {
+      "type": "date"
+    }
+  }
+}
