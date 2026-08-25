@@ -59,11 +59,18 @@ export const teachingPlaces: Client[] = [
 // jumped back to devrel instead of scrolling within the current page.
 // `devrelOnly` hides an item entirely on math rather than linking to a
 // section that isn't there (Projects.tsx renders nothing on math).
+// `mathLabel` overrides `label` on math, for the two sections whose
+// content is different enough there that the devrel label reads wrong:
+// Work.tsx shows "Published Papers" on math, not the devrel "Selected
+// Work"; Writing.tsx shows an astrophotography gallery ("Through the
+// lens"), not blog writing. About and Services keep the same eyebrow
+// text ("About", "Services — N/M") on both personas, so no override
+// needed there.
 export const nav = [
-  { label: "Work", hash: "work" },
+  { label: "Work", mathLabel: "Papers", hash: "work" },
   { label: "Projects", hash: "projects", devrelOnly: true },
   { label: "About", hash: "about" },
   { label: "Services", hash: "services" },
-  { label: "Writing", hash: "writing" },
+  { label: "Writing", mathLabel: "Gallery", hash: "writing" },
   { label: "Contact", hash: "contact" },
 ];

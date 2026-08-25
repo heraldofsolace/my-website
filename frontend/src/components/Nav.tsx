@@ -25,7 +25,11 @@ export default function Nav() {
   const basePath = persona === "math" ? "/math" : "/";
   const items = nav
     .filter((item) => !item.devrelOnly || persona === "devrel")
-    .map((item) => ({ ...item, href: `${basePath}#${item.hash}` }));
+    .map((item) => ({
+      ...item,
+      label: persona === "math" && item.mathLabel ? item.mathLabel : item.label,
+      href: `${basePath}#${item.hash}`,
+    }));
 
   return (
     <header
