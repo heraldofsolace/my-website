@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import MagneticLink from "./MagneticLink";
+import SolarSystemBg from "./SolarSystemBg";
 import { profile } from "@/lib/data";
 import { personas, usePersona } from "@/lib/persona";
 import { hash } from "@/lib/pseudoRandom";
@@ -121,21 +122,29 @@ export default function Hero() {
       className="relative flex min-h-[100svh] flex-col justify-between overflow-hidden pt-32 pb-8"
     >
       <div aria-hidden className="absolute inset-0 z-0">
-        <Image
-          key={persona}
-          src={persona === "math" ? "/hero2.jpg" : "/hero.jpg"}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center grayscale"
-        />
-        {/* Duotone tint + scrim so the photo reads as atmosphere, not a
-            literal stock shot fighting the type for contrast. */}
-        <div
-          className="absolute inset-0 mix-blend-color"
-          style={{ backgroundColor: "var(--bg)" }}
-        />
+        {persona === "math" ? (
+          // Live solar-system diagram instead of a stock photo — see
+          // SolarSystemBg.tsx. No duotone tint below (that's a photo-only
+          // treatment); it's already minimal line art in the site palette.
+          <SolarSystemBg className="absolute inset-0 h-full w-full opacity-60" />
+        ) : (
+          <>
+            <Image
+              src="/hero.jpg"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-center grayscale"
+            />
+            {/* Duotone tint + scrim so the photo reads as atmosphere, not a
+                literal stock shot fighting the type for contrast. */}
+            <div
+              className="absolute inset-0 mix-blend-color"
+              style={{ backgroundColor: "var(--bg)" }}
+            />
+          </>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-bg/40" />
         <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/30 to-bg/80" />
       </div>
