@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
 import Statement from "@/components/Statement";
 import Work from "@/components/Work";
+import Projects from "@/components/Projects";
 import AsciiArt from "@/components/AsciiArt";
 import About from "@/components/About";
 import Experience from "@/components/Experience";
@@ -15,6 +16,7 @@ import {
   getLatestPosts,
   getWorkItems,
   getAstrophotos,
+  getProjects,
   strapiMediaUrl,
 } from "@/lib/strapi";
 
@@ -26,11 +28,12 @@ import {
  * this just fetches the data both need.
  */
 export default async function HomeSections() {
-  const [services, posts, workItems, astrophotos] = await Promise.all([
+  const [services, posts, workItems, astrophotos, projects] = await Promise.all([
     getServices(),
     getLatestPosts(4),
     getWorkItems(),
     getAstrophotos(),
+    getProjects(),
   ]);
 
   // Resolve media URLs here (server-side) rather than in the "use client"
@@ -58,6 +61,7 @@ export default async function HomeSections() {
         <Hero />
         <Statement />
         <Work items={workItems} />
+        <Projects projects={projects} />
         <AsciiArt />
         <About />
         <Experience />

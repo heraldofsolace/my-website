@@ -617,6 +617,42 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiProjectProject extends Struct.CollectionTypeSchema {
+  collectionName: 'projects';
+  info: {
+    description: "Software development portfolio items \u2014 apps, tools, open source work. Separate from Blog Portfolio (which is content/DevRel work) since these need fields that don't apply there: tech stack, repo/live links, a screenshot.";
+    displayName: 'Project';
+    pluralName: 'projects';
+    singularName: 'project';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    github_url: Schema.Attribute.String;
+    image: Schema.Attribute.Media<'images'>;
+    live_url: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::project.project'
+    > &
+      Schema.Attribute.Private;
+    published_date: Schema.Attribute.Date;
+    publishedAt: Schema.Attribute.DateTime;
+    tech_stack: Schema.Attribute.JSON;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiServicePricingServicePricing
   extends Struct.CollectionTypeSchema {
   collectionName: 'service_pricings';
@@ -1205,6 +1241,7 @@ declare module '@strapi/types' {
       'api::blog-portfolio.blog-portfolio': ApiBlogPortfolioBlogPortfolio;
       'api::contact-form-response.contact-form-response': ApiContactFormResponseContactFormResponse;
       'api::post.post': ApiPostPost;
+      'api::project.project': ApiProjectProject;
       'api::service-pricing.service-pricing': ApiServicePricingServicePricing;
       'api::service.service': ApiServiceService;
       'plugin::content-releases.release': PluginContentReleasesRelease;

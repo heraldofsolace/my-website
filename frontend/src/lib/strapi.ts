@@ -19,6 +19,7 @@ export type PostData = APIResponseData<"api::post.post">;
 export type ArticleCategoryData = APIResponseData<"api::article-category.article-category">;
 export type BlogPortfolioData = APIResponseData<"api::blog-portfolio.blog-portfolio">;
 export type AstrophotoData = APIResponseData<"api::astrophoto.astrophoto">;
+export type ProjectData = APIResponseData<"api::project.project">;
 
 /** Resolves a Strapi media `url` (often relative) to an absolute URL. Safe
  * to call from client components — see PUBLIC_STRAPI_URL above. */
@@ -128,6 +129,18 @@ export async function getAstrophotos(): Promise<AstrophotoData[]> {
     "/astrophotos",
     {
       sort: "Date:desc",
+      populate: "image",
+      pagination: { pageSize: 100 },
+    }
+  );
+  return res?.data ?? [];
+}
+
+export async function getProjects(): Promise<ProjectData[]> {
+  const res = await strapiFetch<CollectionTypeResponse<"api::project.project">>(
+    "/projects",
+    {
+      sort: ["featured:desc", "published_date:desc"],
       populate: "image",
       pagination: { pageSize: 100 },
     }
