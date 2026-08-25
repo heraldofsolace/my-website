@@ -66,7 +66,7 @@ function computePlanetPoints(date: Date): PlanetPoint[] {
     const orbitR =
       MIN_ORBIT_R +
       ((sqrtDistances[i] - minSqrt) / (maxSqrt - minSqrt)) *
-        (MAX_ORBIT_R - MIN_ORBIT_R);
+      (MAX_ORBIT_R - MIN_ORBIT_R);
 
     const px = CENTER + orbitR * Math.cos(angle);
     const py = CENTER + orbitR * Math.sin(angle);
@@ -115,7 +115,7 @@ export default function SolarSystemBg({ className }: { className?: string }) {
               r={p.orbitR}
               fill="none"
               stroke="var(--fg)"
-              strokeOpacity={0.14}
+              strokeOpacity={0.5}
               strokeWidth={1}
             />
           ))}
@@ -127,13 +127,13 @@ export default function SolarSystemBg({ className }: { className?: string }) {
             r={30}
             fill="none"
             stroke="var(--accent)"
-            strokeOpacity={0.35}
+            strokeOpacity={0.7}
             strokeWidth={1}
           />
 
           {points.map((p) => (
             <g key={p.id}>
-              <circle cx={p.x} cy={p.y} r={PLANET_DOT_RADIUS[p.id]} fill="var(--fg)" fillOpacity={0.85} />
+              <circle cx={p.x} cy={p.y} r={PLANET_DOT_RADIUS[p.id]} fill="var(--fg)" fillOpacity={0.9} />
               <text
                 x={p.labelX}
                 y={p.labelY}
@@ -143,7 +143,7 @@ export default function SolarSystemBg({ className }: { className?: string }) {
                 fontSize={11}
                 letterSpacing={2}
                 fill="var(--fg)"
-                fillOpacity={0.55}
+                fillOpacity={0.9}
               >
                 {p.id}
               </text>

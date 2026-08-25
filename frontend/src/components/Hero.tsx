@@ -126,7 +126,7 @@ export default function Hero() {
           // Live solar-system diagram instead of a stock photo — see
           // SolarSystemBg.tsx. No duotone tint below (that's a photo-only
           // treatment); it's already minimal line art in the site palette.
-          <SolarSystemBg className="absolute inset-0 h-full w-full opacity-60" />
+          <SolarSystemBg className="absolute inset-0 h-full w-full" />
         ) : (
           <>
             <Image
@@ -213,7 +213,7 @@ export default function Hero() {
               <span>Ouch</span>
               <span>:(</span>
             </motion.div>
-            
+
           )}
         </h1>
 
