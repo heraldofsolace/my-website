@@ -42,3 +42,40 @@ jobs:
         env:
           STRAPI_URL: https://strapi.abhattacharyea.dev
           NEXT_PUBLIC_STRAPI_URL: https://strapi.abhattacharyea.dev
+
+  e2e:
+    name: E2E (Shiplight)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SHIPLIGHT_API_TOKEN: ${{ secrets.SHIPLIGHT_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Root install: see the frontend job's comment above — single
+      # workspaces lockfile at the repo root.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts's webServer starts the frontend itself
+      # (npm run dev in ../frontend) and waits for it to be ready, pointed
+      # at the same public production Strapi as the build step above.
+      - name: Run E2E tests
+        working-directory: e2e
+        run: npx shiplight test
+
+      - name: Upload results to Shiplight
+        if: always()
+        working-directory: e2e
+        env:
+          SHIPLIGHT_REPORT_TO_CLOUD: "1"
+        run: npx shiplight report

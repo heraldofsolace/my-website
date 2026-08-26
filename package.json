@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "frontend",
-    "backend"
+    "backend",
+    "e2e"
   ],
   "scripts": {
     "dev": "nx run frontend:dev",

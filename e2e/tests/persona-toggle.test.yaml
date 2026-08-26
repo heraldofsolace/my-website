@@ -1,0 +1,61 @@
+# Spec: specs/tests/persona-toggle.md
+goal: Persona toggle switches copy, nav, and URL in both directions
+base_url: http://localhost:3000
+tags:
+  - persona
+
+statements:
+  - URL: /
+
+  # Nav-link checks are scoped to the <header> (role "banner") and use
+  # exact:true — real Strapi-backed content elsewhere on the page (blog
+  # titles, CTAs like "See my work") can otherwise substring-match plain
+  # nav labels like "Work" and cause a Playwright strict-mode violation.
+  - VERIFY: The nav shows "Projects" (devrel-only) and does not show "Papers" or "Gallery"
+    js: |
+      const nav = page.getByRole('banner')
+      await expect(nav.getByRole('link', { name: 'Projects', exact: true })).toBeVisible({ timeout: 2000 })
+      await expect(nav.getByRole('link', { name: 'Papers', exact: true })).toHaveCount(0)
+      await expect(nav.getByRole('link', { name: 'Gallery', exact: true })).toHaveCount(0)
+
+  - VERIFY: The hero shows the devrel role, "Developer Relations & Technical Content"
+
+  - intent: Click the persona toggle to switch from devrel to math
+    action: click
+    locator: "getByRole('button', { name: 'Visit the other side' })"
+
+  - WAIT_UNTIL: The persona transition overlay has finished and the URL has updated to /math
+    js: "page.url().endsWith('/math')"
+    timeout_seconds: 5
+
+  - VERIFY: The URL is /math
+    js: "expect(page.url()).toContain('/math')"
+
+  - VERIFY: The nav shows "Papers" and "Gallery" (math labels) and no longer shows "Projects"
+    js: |
+      const nav = page.getByRole('banner')
+      await expect(nav.getByRole('link', { name: 'Papers', exact: true })).toBeVisible({ timeout: 2000 })
+      await expect(nav.getByRole('link', { name: 'Gallery', exact: true })).toBeVisible({ timeout: 2000 })
+      await expect(nav.getByRole('link', { name: 'Projects', exact: true })).toHaveCount(0)
+
+  - VERIFY: The hero shows the math role, "Mathematician & Astrophotographer"
+
+  - intent: Click the persona toggle to switch back from math to devrel
+    action: click
+    locator: "getByRole('button', { name: 'Visit the other side' })"
+
+  - WAIT_UNTIL: The persona transition overlay has finished and the URL has updated back to /
+    js: "page.url().endsWith('/')"
+    timeout_seconds: 5
+
+  - VERIFY: The URL is / (not /math)
+    js: "expect(page.url().endsWith('/math')).toBe(false)"
+
+  - VERIFY: The nav shows "Work", "Projects", and "Writing" again (devrel labels)
+    js: |
+      const nav = page.getByRole('banner')
+      await expect(nav.getByRole('link', { name: 'Work', exact: true })).toBeVisible({ timeout: 2000 })
+      await expect(nav.getByRole('link', { name: 'Projects', exact: true })).toBeVisible({ timeout: 2000 })
+      await expect(nav.getByRole('link', { name: 'Writing', exact: true })).toBeVisible({ timeout: 2000 })
+
+  - VERIFY: The hero shows the devrel role, "Developer Relations & Technical Content"

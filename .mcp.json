@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "shiplight": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@shiplightai/mcp@latest"
+      ],
+      "env": {
+        "PWDEBUG": "console",
+        "SHIPLIGHT_API_TOKEN": "shp_pat_NDFdrtMRA9uTYjhFX16k64uprlCmubp6U5m6DxdBgUQ"
+      }
+    }
+  }
+}
