@@ -2,11 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   BlocksRenderer,
   type BlocksContent as StrapiBlocksContent,
 } from "@strapi/blocks-react-renderer";
 import { strapiMediaUrl } from "@/lib/strapi";
+
+// prism-react-renderer + the extra prismjs grammars pull in a real chunk of
+// JS (~35KB) — most posts have no code blocks at all, so code-split it
+// rather than shipping that to every blog post's client bundle. Still
+// server-rendered (no `ssr: false`) so code blocks appear in the initial
+// HTML for crawlers/no-JS same as everything else here.
+const CodeBlock = dynamic(() => import("@/components/CodeBlock"));
 
 /**
  * Renders Strapi's Blocks rich-text format with the site's own type system —
@@ -54,10 +62,12 @@ export default function BlocksContent({ content }: { content: StrapiBlocksConten
               {children}
             </blockquote>
           ),
-          code: ({ plainText }) => (
-            <pre className="overflow-x-auto rounded-xl border border-line bg-bg-soft p-5">
-              <code className="font-mono text-sm text-fg">{plainText}</code>
-            </pre>
+          // Strapi's code block carries a `language` (set via the Blocks
+          // editor's language picker) that @strapi/blocks-react-renderer's
+          // own types don't declare, even though it's there at runtime —
+          // widen the prop type locally rather than trusting the package.
+          code: ({ plainText, language }: { plainText?: string; language?: string }) => (
+            <CodeBlock code={plainText ?? ""} language={language} />
           ),
           link: ({ children, url }) => (
             <Link
