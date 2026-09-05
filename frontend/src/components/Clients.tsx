@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { clients, teachingPlaces, type Client } from "@/lib/data";
+import { clients, teachingPlaces, stats, type Client } from "@/lib/data";
 import { usePersona } from "@/lib/persona";
-import InfiniteSpiral, { type InfiniteSpiralItem } from "./InfiniteSpiral";
+import { Reveal } from "./Reveal";
+import Counter from "./Counter";
+import DriftWall, { type DriftWallItem } from "./DriftWall";
+
+// Same figure About.tsx's stat grid shows under "Clients served" — pulled
+// from the one shared array rather than re-counting DRIFT_ITEMS below, so
+// the two sections can't quietly disagree with each other.
+const CLIENTS_STAT = stats.find((s) => s.label === "Clients served");
 
 function ClientBadge({ name, domain }: Client) {
   const [failed, setFailed] = useState(false);
@@ -74,59 +80,53 @@ function TeachingMarquee() {
   );
 }
 
-const SPIRAL_ITEMS: InfiniteSpiralItem[] = clients
+const DRIFT_ITEMS: DriftWallItem[] = clients
   .filter((c): c is Client & { domain: string } => !!c.domain)
   .map((c) => ({
-    src: `https://www.google.com/s2/favicons?domain=${c.domain}&sz=128`,
-    alt: c.name,
-    label: c.name,
+    image: `https://www.google.com/s2/favicons?domain=${c.domain}&sz=128`,
+    title: c.name,
   }));
 
-/** Devrel's "Companies I've helped": a slow InfiniteSpiral of client logos
- * on the right, with whichever one is currently front-and-center named in
- * text on the left — InfiniteSpiral's onActiveChange (added in the port,
- * not upstream) is what makes that possible. */
-function CompanySpiral() {
-  const [active, setActive] = useState(SPIRAL_ITEMS[0]?.label ?? "");
-
+/** Devrel's "Companies I've helped": fullscreen, the headline stat on the
+ * left and a wall of client logos drifting upward on the right — each one
+ * grayscale at rest, revealing its name and full color on hover/focus
+ * (DriftWall's own `.is-active` state, see the port's added caption). No
+ * section label; the stat itself is the header here. */
+function CompanyDriftWall() {
   return (
-    <section className="border-t border-line py-20 md:py-28">
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 md:grid-cols-2 md:items-center md:gap-16 md:px-10">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">
-            Companies I&apos;ve helped
+    <section className="relative flex min-h-[100svh] items-center border-t border-line py-20">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-6 md:grid-cols-2 md:gap-16 md:px-10">
+        <Reveal>
+          {CLIENTS_STAT && (
+            <p className="font-display text-8xl font-semibold tracking-tight text-fg sm:text-9xl">
+              <Counter value={CLIENTS_STAT.value} suffix={CLIENTS_STAT.suffix} />
+            </p>
+          )}
+          <p className="mt-6 max-w-xs font-mono text-sm uppercase tracking-[0.3em] text-muted">
+            Companies helped build trust with developers
           </p>
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={active}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="mt-6 font-display text-4xl font-semibold tracking-tight text-fg sm:text-5xl"
-            >
-              {active}
-            </motion.p>
-          </AnimatePresence>
-        </div>
+        </Reveal>
 
-        <div className="relative h-[360px] sm:h-[440px]">
-          <InfiniteSpiral
-            items={SPIRAL_ITEMS}
-            animationMode="auto"
-            // Slow enough to still read as "a name changing every few
-            // seconds" rather than a spinning gallery, but 0.06 turned out
-            // to be too slow in practice.
-            speed={0.14}
-            radius={130}
-            cardWidth={92}
-            cardHeight={92}
-            verticalSpacing={54}
-            cardsPerTurn={7}
-            imageFit="contain"
-            grayscale={1}
-            pauseOnHover
-            onActiveChange={(item) => setActive(item.label ?? item.alt)}
+        <div className="relative h-[360px] md:h-[70vh]">
+          <DriftWall
+            items={DRIFT_ITEMS}
+            columns={6}
+            tileWidth={140}
+            tileHeight={140}
+            gap={16}
+            radius={16}
+            tilt={14}
+            turn={-10}
+            perspective={1400}
+            depth={100}
+            speed={26}
+            variance={0.4}
+            parallax={0.4}
+            lift={40}
+            fade={0.55}
+            dim={0.5}
+            grayscale
+            overlayColor="var(--bg)"
           />
         </div>
       </div>
@@ -136,5 +136,5 @@ function CompanySpiral() {
 
 export default function Clients() {
   const { persona } = usePersona();
-  return persona === "math" ? <TeachingMarquee /> : <CompanySpiral />;
+  return persona === "math" ? <TeachingMarquee /> : <CompanyDriftWall />;
 }
