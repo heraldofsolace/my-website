@@ -133,6 +133,41 @@ body {
   animation: marquee 100s linear infinite;
 }
 
+/* StarBorder.tsx (React Bits port) — upstream ships these as a
+   tailwind.config.js `extend.keyframes`/`extend.animation` snippet, but
+   this project is Tailwind v4 (CSS-first config, no JS config file). */
+@keyframes star-movement-bottom {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-100%, 0%);
+    opacity: 0;
+  }
+}
+
+@keyframes star-movement-top {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(100%, 0%);
+    opacity: 0;
+  }
+}
+
+.animate-star-movement-bottom {
+  animation: star-movement-bottom linear infinite alternate;
+}
+
+.animate-star-movement-top {
+  animation: star-movement-top linear infinite alternate;
+}
+
 .text-balance {
   text-wrap: balance;
 }
