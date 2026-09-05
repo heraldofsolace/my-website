@@ -114,16 +114,17 @@ function CompanySpiral() {
           <InfiniteSpiral
             items={SPIRAL_ITEMS}
             animationMode="auto"
-            // Very slow — this is meant to read as a name changing every
-            // few seconds, not a spinning gallery.
-            speed={0.06}
+            // Slow enough to still read as "a name changing every few
+            // seconds" rather than a spinning gallery, but 0.06 turned out
+            // to be too slow in practice.
+            speed={0.14}
             radius={130}
             cardWidth={92}
             cardHeight={92}
             verticalSpacing={54}
             cardsPerTurn={7}
             imageFit="contain"
-            grayscale={0.6}
+            grayscale={1}
             pauseOnHover
             onActiveChange={(item) => setActive(item.label ?? item.alt)}
           />
