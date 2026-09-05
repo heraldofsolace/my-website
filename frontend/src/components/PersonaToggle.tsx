@@ -21,7 +21,11 @@ export default function PersonaToggle() {
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
         />
       </span>
-      Visit the other side
+      {/* Now that this lives directly in the (always-visible) navbar header
+          instead of inside the menu panel, it has to share a single row
+          with the logo and, below lg, the menu toggle too — the label
+          crowded that row on narrow phones, so it drops first. */}
+      <span className="hidden sm:inline">Visit the other side</span>
     </button>
   );
 }

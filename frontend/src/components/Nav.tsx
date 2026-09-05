@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { nav, profile } from "@/lib/data";
 import { usePersona } from "@/lib/persona";
+import { useActiveHash } from "@/lib/useActiveHash";
 import PersonaToggle from "./PersonaToggle";
 import StaggeredMenu, { type StaggeredMenuItem } from "./StaggeredMenu";
 
@@ -25,27 +26,31 @@ export default function Nav() {
         label,
         ariaLabel: `Jump to the ${label} section`,
         href: `${basePath}#${item.hash}`,
+        hash: item.hash,
       };
     });
+
+  const activeHash = useActiveHash(
+    items.map((item) => item.hash).filter((hash): hash is string => !!hash)
+  );
 
   return (
     <StaggeredMenu
       open={open}
       onOpenChange={setOpen}
       items={items}
+      activeHash={activeHash}
       socialItems={profile.socials}
+      navControl={<PersonaToggle />}
       panelExtra={
-        <div className="flex flex-col items-start gap-4">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
-            </span>
-            <span className="font-mono text-xs uppercase tracking-widest text-muted">
-              {profile.availability}
-            </span>
-          </div>
-          <PersonaToggle />
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+          </span>
+          <span className="font-mono text-xs uppercase tracking-widest text-muted">
+            {profile.availability}
+          </span>
         </div>
       }
       logo={

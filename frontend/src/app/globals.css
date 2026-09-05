@@ -8,6 +8,22 @@
   --line: rgba(246, 241, 231, 0.12);
   --accent: #d64541;
   --accent-soft: #797979;
+
+  /* Width of Nav's permanently-open sidebar at lg+ (StaggeredMenu.tsx) —
+     shared with the body padding below so real page content actually
+     makes room for it instead of the sidebar just sitting on top. */
+  --nav-sidebar-w: 400px;
+}
+
+/* Below lg, Nav is an overlay (its panel floats over the page, closed by
+   default) — nothing here to do. At lg+ it's permanently open and takes
+   real space, so the page needs to yield that space rather than run under
+   it. Plain CSS rather than a React-measured value: it's unconditional at
+   this breakpoint, no JS needed to decide it. */
+@media (min-width: 1024px) {
+  body {
+    padding-right: var(--nav-sidebar-w);
+  }
 }
 
 @theme inline {

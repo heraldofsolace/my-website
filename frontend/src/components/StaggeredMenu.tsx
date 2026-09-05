@@ -22,14 +22,23 @@
 // logo image and its own fixed palette — swapped for a `logo` ReactNode
 // and hardcoded theme colors (`text-accent`, `bg-bg-soft`, etc., same
 // tokens every other component here uses) instead of configurable ones.
+//
+// Also not upstream: at lg+ this becomes a permanently-open sidebar instead
+// of a toggleable overlay (see `useMediaQuery` below) — real page content
+// makes room for it via the `--nav-sidebar-w`-driven body padding in
+// globals.css, rather than the sidebar just floating on top of everything.
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useRef, type ReactNode } from "react";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 export interface StaggeredMenuItem {
   label: string;
   ariaLabel: string;
   href: string;
+  /** DOM id this item's link points at (the part after "#") — compared
+   * against `activeHash` to highlight whichever section is in view. */
+  hash?: string;
 }
 
 export interface StaggeredMenuSocialItem {
@@ -48,12 +57,20 @@ interface StaggeredMenuProps {
   logo?: ReactNode;
   closeOnClickAway?: boolean;
   /** Rendered in the panel below the nav items, above the socials — this
-   * site's PersonaToggle + availability badge don't exist upstream, and a
-   * fixed slot here beats forcing them into `items` as fake links. */
+   * site's availability badge doesn't exist upstream, and a fixed slot
+   * here beats forcing it into `items` as a fake link. */
   panelExtra?: ReactNode;
+  /** Rendered in the always-visible header, next to the logo — for
+   * anything (this site's PersonaToggle) that needs to stay reachable
+   * without opening the menu at all. */
+  navControl?: ReactNode;
+  /** Currently in-view section id (see useActiveHash) — highlights the
+   * matching item. null/undefined highlights nothing. */
+  activeHash?: string | null;
 }
 
 const EASE = [0.16, 1, 0.3, 1] as const;
+const DESKTOP_QUERY = "(min-width: 1024px)";
 
 const layerVariants: Variants = {
   hidden: (position: "left" | "right") => ({ x: position === "left" ? "-100%" : "100%" }),
@@ -109,9 +126,18 @@ export default function StaggeredMenu({
   logo,
   closeOnClickAway = true,
   panelExtra,
+  navControl,
+  activeHash,
 }: StaggeredMenuProps) {
   const panelRef = useRef<HTMLElement>(null);
   const toggleBtnRef = useRef<HTMLButtonElement>(null);
+
+  // At lg+ the panel is permanently open and there's no toggle button to
+  // drive it — `open` stays whatever it last was (false, since the button
+  // that would flip it isn't rendered), so it has to be OR'd with desktop
+  // rather than replaced by it.
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const visible = open || isDesktop;
 
   const close = () => onOpenChange(false);
 
@@ -119,11 +145,11 @@ export default function StaggeredMenu({
   // back in) rather than unmounting — without this, its links would still
   // sit in the tab order and stay mouse-clickable while invisible.
   useEffect(() => {
-    if (panelRef.current) panelRef.current.inert = !open;
-  }, [open]);
+    if (panelRef.current) panelRef.current.inert = !visible;
+  }, [visible]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || isDesktop) return;
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") close();
@@ -143,7 +169,7 @@ export default function StaggeredMenu({
       document.removeEventListener("mousedown", handleClickAway);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, closeOnClickAway]);
+  }, [open, isDesktop, closeOnClickAway]);
 
   const panelSide = position === "left" ? "left-0" : "right-0";
 
@@ -151,52 +177,59 @@ export default function StaggeredMenu({
     <>
       <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 md:px-10">
         <div className="pointer-events-auto">{logo}</div>
-        <button
-          ref={toggleBtnRef}
-          type="button"
-          onClick={() => onOpenChange(!open)}
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          aria-controls="staggered-menu-panel"
-          data-cursor-hover
-          className="pointer-events-auto flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-fg"
-        >
-          <span className="relative h-[1em] w-12 overflow-hidden text-right">
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span
-                key={open ? "close" : "menu"}
-                initial={{ y: "100%" }}
-                animate={{ y: "0%" }}
-                exit={{ y: "-100%" }}
-                transition={{ duration: 0.3, ease: EASE }}
-                className="block"
-              >
-                {open ? "Close" : "Menu"}
-              </motion.span>
-            </AnimatePresence>
-          </span>
-          <span className="relative flex h-3.5 w-3.5 shrink-0 items-center justify-center">
-            <motion.span
-              animate={{ rotate: open ? 45 : 0, y: open ? 0 : -3 }}
-              className="absolute h-px w-3.5 bg-fg"
-            />
-            <motion.span
-              animate={{ opacity: open ? 0 : 1 }}
-              className="absolute h-px w-3.5 bg-fg"
-            />
-            <motion.span
-              animate={{ rotate: open ? -45 : 0, y: open ? 0 : 3 }}
-              className="absolute h-px w-3.5 bg-fg"
-            />
-          </span>
-        </button>
+        <div className="pointer-events-auto flex items-center gap-4">
+          {navControl}
+          {!isDesktop && (
+            <button
+              ref={toggleBtnRef}
+              type="button"
+              onClick={() => onOpenChange(!open)}
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              aria-controls="staggered-menu-panel"
+              data-cursor-hover
+              className="flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-fg"
+            >
+              <span className="relative h-[1em] w-12 overflow-hidden text-right">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  <motion.span
+                    key={open ? "close" : "menu"}
+                    initial={{ y: "100%" }}
+                    animate={{ y: "0%" }}
+                    exit={{ y: "-100%" }}
+                    transition={{ duration: 0.3, ease: EASE }}
+                    className="block"
+                  >
+                    {open ? "Close" : "Menu"}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+              <span className="relative flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+                <motion.span
+                  animate={{ rotate: open ? 45 : 0, y: open ? 0 : -3 }}
+                  className="absolute h-px w-3.5 bg-fg"
+                />
+                <motion.span
+                  animate={{ opacity: open ? 0 : 1 }}
+                  className="absolute h-px w-3.5 bg-fg"
+                />
+                <motion.span
+                  animate={{ rotate: open ? -45 : 0, y: open ? 0 : 3 }}
+                  className="absolute h-px w-3.5 bg-fg"
+                />
+              </span>
+            </button>
+          )}
+        </div>
       </header>
 
       {/* Underlay layers — a quick two-tone color sweep that reveals just
-          ahead of the actual panel, rather than the panel simply appearing. */}
+          ahead of the actual panel, rather than the panel simply appearing.
+          Harmless at lg+ too: it just becomes the sidebar's one-time
+          load-in flourish instead of an open/close transition. */}
       <div
         aria-hidden
-        className={`pointer-events-none fixed inset-y-0 ${panelSide} z-40 w-full sm:w-[420px]`}
+        className={`pointer-events-none fixed inset-y-0 ${panelSide} z-40 w-full sm:w-[420px] lg:w-[var(--nav-sidebar-w)]`}
       >
         {(["var(--bg-soft)", "var(--accent)"] as const).map((color, i) => (
           <motion.div
@@ -204,7 +237,7 @@ export default function StaggeredMenu({
             custom={position}
             variants={layerVariants}
             initial="hidden"
-            animate={open ? "visible" : "hidden"}
+            animate={visible ? "visible" : "hidden"}
             transition={{ duration: 0.5, ease: EASE, delay: i * 0.08 }}
             className="absolute inset-0"
             style={{ background: color }}
@@ -218,45 +251,51 @@ export default function StaggeredMenu({
         custom={position}
         variants={panelVariants}
         initial="hidden"
-        animate={open ? "visible" : "hidden"}
-        aria-hidden={!open}
-        className={`fixed inset-y-0 ${panelSide} z-40 flex h-full w-full flex-col overflow-y-auto border-line bg-bg p-8 pt-28 sm:w-[420px] sm:p-10 sm:pt-32 ${
+        animate={visible ? "visible" : "hidden"}
+        aria-hidden={!visible}
+        className={`fixed inset-y-0 ${panelSide} z-40 flex h-full w-full flex-col overflow-y-auto border-line bg-bg p-8 pt-28 sm:w-[420px] sm:p-10 sm:pt-32 lg:w-[var(--nav-sidebar-w)] ${
           position === "left" ? "border-r" : "border-l"
-        } ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+        } ${visible ? "pointer-events-auto" : "pointer-events-none"}`}
       >
         <motion.ul
           variants={listVariants}
           initial="hidden"
-          animate={open ? "visible" : "hidden"}
+          animate={visible ? "visible" : "hidden"}
           className="flex flex-col gap-1"
         >
-          {items.map((item, i) => (
-            <li key={item.href} className="overflow-hidden">
-              <motion.div variants={itemVariants}>
-                <Link
-                  href={item.href}
-                  aria-label={item.ariaLabel}
-                  onClick={close}
-                  data-cursor-hover
-                  className="group flex items-baseline justify-between py-2 font-display text-4xl font-semibold uppercase tracking-tight text-fg transition-colors hover:text-accent sm:text-5xl"
-                >
-                  {item.label}
-                  {displayItemNumbering && (
-                    <motion.span
-                      variants={numberVariants}
-                      className="font-mono text-sm tracking-widest text-accent"
-                    >
-                      {String(i + 1).padStart(2, "0")}
-                    </motion.span>
-                  )}
-                </Link>
-              </motion.div>
-            </li>
-          ))}
+          {items.map((item, i) => {
+            const isActive = !!item.hash && item.hash === activeHash;
+            return (
+              <li key={item.href} className="overflow-hidden">
+                <motion.div variants={itemVariants}>
+                  <Link
+                    href={item.href}
+                    aria-label={item.ariaLabel}
+                    aria-current={isActive ? "true" : undefined}
+                    onClick={close}
+                    data-cursor-hover
+                    className={`group flex items-baseline justify-between py-2 font-display text-4xl font-semibold uppercase tracking-tight transition-colors hover:text-accent sm:text-5xl lg:text-4xl ${
+                      isActive ? "text-accent" : "text-fg"
+                    }`}
+                  >
+                    {item.label}
+                    {displayItemNumbering && (
+                      <motion.span
+                        variants={numberVariants}
+                        className="font-mono text-sm tracking-widest text-accent"
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </motion.span>
+                    )}
+                  </Link>
+                </motion.div>
+              </li>
+            );
+          })}
         </motion.ul>
 
         {panelExtra && (
-          <motion.div variants={fadeInVariants} initial="hidden" animate={open ? "visible" : "hidden"} className="mt-10">
+          <motion.div variants={fadeInVariants} initial="hidden" animate={visible ? "visible" : "hidden"} className="mt-10">
             {/* framer-motion's bundled types don't like an arbitrary
                 consumer ReactNode as a motion element's direct children
                 (see TextType.tsx's cursorCharacter for the same mismatch) —
@@ -270,7 +309,7 @@ export default function StaggeredMenu({
             <motion.h3
               variants={fadeInVariants}
               initial="hidden"
-              animate={open ? "visible" : "hidden"}
+              animate={visible ? "visible" : "hidden"}
               className="font-mono text-xs uppercase tracking-[0.3em] text-accent"
             >
               Elsewhere
@@ -278,7 +317,7 @@ export default function StaggeredMenu({
             <motion.ul
               variants={socialListVariants}
               initial="hidden"
-              animate={open ? "visible" : "hidden"}
+              animate={visible ? "visible" : "hidden"}
               className="mt-4 flex flex-row flex-wrap items-center gap-5"
             >
               {socialItems.map((social) => (
