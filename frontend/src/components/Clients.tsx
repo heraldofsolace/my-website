@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { clients, teachingPlaces, type Client } from "@/lib/data";
 import { usePersona } from "@/lib/persona";
-
-const COPY = {
-  devrel: { label: "Companies I've helped", items: clients },
-  math: { label: "Where I've taught", items: teachingPlaces },
-};
+import InfiniteSpiral, { type InfiniteSpiralItem } from "./InfiniteSpiral";
 
 function ClientBadge({ name, domain }: Client) {
   const [failed, setFailed] = useState(false);
@@ -47,14 +44,14 @@ function ClientBadge({ name, domain }: Client) {
   );
 }
 
-export default function Clients() {
-  const { persona } = usePersona();
-  const copy = COPY[persona];
-
+/** Math persona only now — devrel's "Companies I've helped" moved to
+ * CompanySpiral below. A handful of teaching venues reads fine as a
+ * marquee; it doesn't need the spiral treatment. */
+function TeachingMarquee() {
   return (
     <section className="border-t border-line py-16">
       <p className="mx-auto mb-10 max-w-7xl px-6 font-mono text-xs uppercase tracking-[0.3em] text-accent md:px-10">
-        {copy.label}
+        Where I&apos;ve taught
       </p>
 
       <div className="relative overflow-hidden">
@@ -67,12 +64,76 @@ export default function Clients() {
           className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-bg to-transparent"
         />
 
-        <div key={persona} className="animate-marquee flex w-max items-center gap-12 whitespace-nowrap">
-          {[...copy.items, ...copy.items].map((client, i) => (
-            <ClientBadge key={`${client.name}-${i}`} {...client} />
+        <div className="animate-marquee flex w-max items-center gap-12 whitespace-nowrap">
+          {[...teachingPlaces, ...teachingPlaces].map((place, i) => (
+            <ClientBadge key={`${place.name}-${i}`} {...place} />
           ))}
         </div>
       </div>
     </section>
   );
+}
+
+const SPIRAL_ITEMS: InfiniteSpiralItem[] = clients
+  .filter((c): c is Client & { domain: string } => !!c.domain)
+  .map((c) => ({
+    src: `https://www.google.com/s2/favicons?domain=${c.domain}&sz=128`,
+    alt: c.name,
+    label: c.name,
+  }));
+
+/** Devrel's "Companies I've helped": a slow InfiniteSpiral of client logos
+ * on the right, with whichever one is currently front-and-center named in
+ * text on the left — InfiniteSpiral's onActiveChange (added in the port,
+ * not upstream) is what makes that possible. */
+function CompanySpiral() {
+  const [active, setActive] = useState(SPIRAL_ITEMS[0]?.label ?? "");
+
+  return (
+    <section className="border-t border-line py-20 md:py-28">
+      <div className="mx-auto grid max-w-7xl gap-12 px-6 md:grid-cols-2 md:items-center md:gap-16 md:px-10">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">
+            Companies I&apos;ve helped
+          </p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={active}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="mt-6 font-display text-4xl font-semibold tracking-tight text-fg sm:text-5xl"
+            >
+              {active}
+            </motion.p>
+          </AnimatePresence>
+        </div>
+
+        <div className="relative h-[360px] sm:h-[440px]">
+          <InfiniteSpiral
+            items={SPIRAL_ITEMS}
+            animationMode="auto"
+            // Very slow — this is meant to read as a name changing every
+            // few seconds, not a spinning gallery.
+            speed={0.06}
+            radius={130}
+            cardWidth={92}
+            cardHeight={92}
+            verticalSpacing={54}
+            cardsPerTurn={7}
+            imageFit="contain"
+            grayscale={0.6}
+            pauseOnHover
+            onActiveChange={(item) => setActive(item.label ?? item.alt)}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function Clients() {
+  const { persona } = usePersona();
+  return persona === "math" ? <TeachingMarquee /> : <CompanySpiral />;
 }
