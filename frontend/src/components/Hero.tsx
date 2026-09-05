@@ -2,16 +2,30 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import MagneticLink from "./MagneticLink";
 import SolarSystemBg from "./SolarSystemBg";
+import GridMotion from "./GridMotion";
 import TextType from "./TextType";
-import { profile } from "@/lib/data";
+import { profile, clients } from "@/lib/data";
 import { personas, usePersona } from "@/lib/persona";
 import { hash } from "@/lib/pseudoRandom";
 import { PI_DIGITS } from "@/lib/piDigits";
 
 const NAME_LINES = ["Aniket", "Bhattacharyea"];
+
+// DevRel-persona hero background: a parallaxing grid mosaic instead of a
+// stock photo — see GridMotion.tsx. Interleaved rather than logos-then-words
+// so the texture doesn't read as two distinct blocks: company favicons (the
+// same "companies I've helped" set Clients.tsx marquees lower on the page)
+// alternating with the persona's own keyword list.
+const GRID_LOGO_ITEMS = clients
+  .filter((c) => c.domain)
+  .map((c) => `https://www.google.com/s2/favicons?domain=${c.domain}&sz=128`);
+const HERO_GRID_ITEMS: string[] = Array.from({ length: 28 }, (_, i) =>
+  i % 2 === 0
+    ? GRID_LOGO_ITEMS[(i / 2) % GRID_LOGO_ITEMS.length]
+    : personas.devrel.keywords[((i - 1) / 2) % personas.devrel.keywords.length]
+);
 
 // Easter egg, math persona only: click the emphasized "precision" in the
 // bio and it counts up pi's digits in its place, one more per click — a
@@ -129,22 +143,19 @@ export default function Hero() {
           // treatment); it's already minimal line art in the site palette.
           <SolarSystemBg className="absolute inset-0 h-full w-full" />
         ) : (
-          <>
-            <Image
-              src="/hero.jpg"
-              alt=""
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover object-center grayscale"
-            />
-            {/* Duotone tint + scrim so the photo reads as atmosphere, not a
-                literal stock shot fighting the type for contrast. */}
-            <div
-              className="absolute inset-0 mix-blend-color"
-              style={{ backgroundColor: "var(--bg)" }}
-            />
-          </>
+          // grayscale mutes the client-logo tiles' brand colors (full-
+          // saturation blues/oranges/yellows fought the hero text badly
+          // otherwise) down to the same tonal range as everything else in
+          // the section — legibility then comes from GridMotion's own
+          // radial gradient plus the two scrims below, same as the photo
+          // this replaced, rather than an extra flat overlay on top of
+          // those (which buried the grid entirely instead of just toning
+          // it down).
+          <GridMotion
+            items={HERO_GRID_ITEMS}
+            gradientColor="var(--bg)"
+            className="absolute inset-0 grayscale"
+          />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-bg/40" />
         <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/30 to-bg/80" />
