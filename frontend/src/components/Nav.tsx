@@ -24,7 +24,6 @@ export default function Nav() {
       const label = persona === "math" && item.mathLabel ? item.mathLabel : item.label;
       return {
         label,
-        ariaLabel: `Jump to the ${label} section`,
         href: `${basePath}#${item.hash}`,
         hash: item.hash,
       };

@@ -34,7 +34,6 @@ import { useMediaQuery } from "@/lib/useMediaQuery";
 
 export interface StaggeredMenuItem {
   label: string;
-  ariaLabel: string;
   href: string;
   /** DOM id this item's link points at (the part after "#") — compared
    * against `activeHash` to highlight whichever section is in view. */
@@ -174,8 +173,17 @@ export default function StaggeredMenu({
   const panelSide = position === "left" ? "left-0" : "right-0";
 
   return (
-    <>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 md:px-10">
+    // A real <header> landmark wrapping both the persistent top bar *and*
+    // the nav panel below — not just the top bar — so the whole thing is
+    // one `role="banner"` region a nav link is reachable within,
+    // regardless of which piece (bar vs. panel) actually renders it at a
+    // given breakpoint. (Nesting a plain <header>-styled <div> for the top
+    // bar inside this one, since two <header> elements can't nest per the
+    // HTML spec.) Fixed-position children don't contribute to a parent's
+    // box, so this wrapper stays visually inert — zero height, doesn't
+    // intercept layout or clicks.
+    <header>
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 md:px-10">
         <div className="pointer-events-auto">{logo}</div>
         <div className="pointer-events-auto flex items-center gap-4">
           {navControl}
@@ -221,7 +229,7 @@ export default function StaggeredMenu({
             </button>
           )}
         </div>
-      </header>
+      </div>
 
       {/* Underlay layers — a quick two-tone color sweep that reveals just
           ahead of the actual panel, rather than the panel simply appearing.
@@ -270,7 +278,6 @@ export default function StaggeredMenu({
                 <motion.div variants={itemVariants}>
                   <Link
                     href={item.href}
-                    aria-label={item.ariaLabel}
                     aria-current={isActive ? "true" : undefined}
                     onClick={close}
                     data-cursor-hover
@@ -280,7 +287,13 @@ export default function StaggeredMenu({
                   >
                     {item.label}
                     {displayItemNumbering && (
+                      // aria-hidden: purely decorative sequencing — without
+                      // this, the link's accessible name becomes e.g.
+                      // "Projects02" (its text content, numbering
+                      // concatenated in), not the plain label a test or a
+                      // screen reader user would expect.
                       <motion.span
+                        aria-hidden="true"
                         variants={numberVariants}
                         className="font-mono text-sm tracking-widest text-accent"
                       >
@@ -337,6 +350,6 @@ export default function StaggeredMenu({
           </div>
         )}
       </motion.aside>
-    </>
+    </header>
   );
 }
