@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import MagneticLink from "./MagneticLink";
 import SolarSystemBg from "./SolarSystemBg";
+import TextType from "./TextType";
 import { profile } from "@/lib/data";
 import { personas, usePersona } from "@/lib/persona";
 import { hash } from "@/lib/pseudoRandom";
@@ -277,14 +278,26 @@ export default function Hero() {
         )}
       </div>
 
-      <div className="relative mt-16 border-y border-line py-5 bg-red-500">
-        <div className="animate-marquee flex w-max gap-5 whitespace-nowrap font-display text-2xl text-white sm:text-7xl ">
-          {[...content.keywords, ...content.keywords].map((word, i) => (
-            <span key={i} className="flex items-center gap-5">
-              {word}
-              <span className="text-white/50">✦</span>
-            </span>
-          ))}
+      <div className="relative mt-16 border-y border-line py-8">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 md:px-10">
+          <span aria-hidden className="text-accent">
+            ✦
+          </span>
+          {/* key={persona} forces a remount on persona switch — TextType
+              keeps its own typing-progress state internally, so without this
+              it'd resume mid-word into the new persona's keyword list rather
+              than starting the reveal over. */}
+          <TextType
+            key={persona}
+            as="span"
+            text={content.keywords}
+            typingSpeed={70}
+            deletingSpeed={35}
+            pauseDuration={1800}
+            cursorCharacter="_"
+            cursorClassName="text-accent"
+            className="font-display text-2xl font-semibold text-fg sm:text-6xl"
+          />
         </div>
       </div>
     </section>
